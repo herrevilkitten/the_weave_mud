@@ -705,15 +705,15 @@ void interpret( CHAR_DATA *ch, char *argument )
 		    break;
 		}
 
-		if ( guildcmd_table[cmd].restrict == LEVEL_ONLY 
+		if ( guildcmd_table[cmd].restricted == LEVEL_ONLY 
 		&&   GET_RANK(ch,1) != guildcmd_table[cmd].rank )
 		    continue;
 
-		if ( guildcmd_table[cmd].restrict == LEVEL_LESS
+		if ( guildcmd_table[cmd].restricted == LEVEL_LESS
 		&&   GET_RANK(ch,1) > guildcmd_table[cmd].rank )
 		    continue;
 
-		if ( guildcmd_table[cmd].restrict == LEVEL_GREATER 
+		if ( guildcmd_table[cmd].restricted == LEVEL_GREATER 
 		&&   GET_RANK(ch,1) < guildcmd_table[cmd].rank )
 		    continue;
 

@@ -193,8 +193,6 @@ void move_char( CHAR_DATA *ch, int door, bool follow )
     ROOM_INDEX_DATA *to_room;
     AFFECT_DATA *paf, *paf_next;
     EXIT_DATA *pexit;
-    DESCRIPTOR_DATA *d;
-    int count_p = 0;
 
     if ( door < 0 || door > 5 )
     {
@@ -301,7 +299,7 @@ void move_char( CHAR_DATA *ch, int door, bool follow )
 
     if ( !IS_NPC(ch) && ch->position != POS_MOUNTED )
     {
-	int move;
+	int move = 0;
 
 	if ( in_room->sector_type == SECT_AIR
 	||   to_room->sector_type == SECT_AIR )
@@ -425,7 +423,7 @@ void move_char( CHAR_DATA *ch, int door, bool follow )
     }
     else if ( !IS_NPC(ch) && ch->position == POS_MOUNTED )
     {
-	int move;
+	int move = 0;
 	CHAR_DATA *mount;
 
 	if ( ch->mount == NULL )

@@ -2410,7 +2410,6 @@ void do_score( CHAR_DATA *ch, char *argument )
   {
     char *rank2;
     char *rank3;
-    char *rank4;
 
     send_to_char( "\n\r", ch );
     sprintf( buf, "Guild:   `4%20s`n\n\r"

@@ -1489,11 +1489,12 @@ bool damage( CHAR_DATA *ch, CHAR_DATA *victim, int dam, int dt, int dam_type,
 		!IS_SET(ch->act,PLR_AUTOLOOT))
 	      do_get(ch, "gold corpse");
             
-	    if ( IS_SET(ch->act, PLR_AUTOSAC) )
+	    if ( IS_SET(ch->act, PLR_AUTOSAC) ) {
        	      if ( IS_SET(ch->act,PLR_AUTOLOOT) && corpse && corpse->contains)
 		return TRUE;  /* leave if corpse has treasure */
 	      else
 		do_sacrifice( ch, "corpse" );
+            }
 	}
 
 	return TRUE;

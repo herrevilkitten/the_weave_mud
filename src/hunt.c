@@ -305,7 +305,7 @@ int find_path( int in_room_vnum, int out_room_vnum, CHAR_DATA *ch,
 {
   struct room_q         *tmp_q, *q_head, *q_tail;
   struct hash_header    x_room;
-  int                   i, tmp_room, count=0, thru_doors;
+  size_t                  i, tmp_room, count=0, thru_doors;
   int			area_count = 0;
   ROOM_INDEX_DATA       *herep;
   ROOM_INDEX_DATA       *startp;
@@ -693,7 +693,7 @@ int find_scan_dir( int in_room_vnum, int out_room_vnum, CHAR_DATA *ch,
 {
     struct room_q         *tmp_q, *q_head, *q_tail;
     struct hash_header    x_room;
-    int                   i, tmp_room, count=0, thru_doors;
+    size_t                   i, tmp_room, count=0, thru_doors;
     ROOM_INDEX_DATA       *herep;
     ROOM_INDEX_DATA       *startp;
     EXIT_DATA             *exitp;

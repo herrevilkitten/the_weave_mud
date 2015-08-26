@@ -1663,12 +1663,13 @@ bool spell_damage( CHAR_DATA *ch, CHAR_DATA *victim, int dam, int dt, int dam_ty
 	    &&   !IS_SET(ch->act,PLR_AUTOLOOT) )
 		do_get(ch, "gold corpse");
                         
-	    if ( IS_SET(ch->act, PLR_AUTOSAC) )
+	    if ( IS_SET(ch->act, PLR_AUTOSAC) ) {
 		if ( IS_SET(ch->act,PLR_AUTOLOOT)
 		&&   corpse && corpse->contains )
 		    return TRUE;  /* leave if corpse has treasure */
 		else      
 		    do_sacrifice( ch, "corpse" );
+            }
 	}
         
 	return TRUE;
@@ -1864,7 +1865,6 @@ void spell_message( CHAR_DATA *ch, CHAR_DATA *victim,int dam,int dt,bool immune,
 
 void do_ecast( CHAR_DATA *ch, char *argument )
 {
-    CHAR_DATA *rch;
     char arg[MAX_STRING_LENGTH];
     char *ptr;
     int powers = 0;
@@ -1936,7 +1936,6 @@ void do_cast( CHAR_DATA *ch, char *argument )
     int stamina_add;
     int concentrate_mod;
     int sn;
-    int power_res = 0;
     int luck = 0;
     int target_type = TAR_IGNORE;
     int multiplier = 100;
@@ -2342,7 +2341,7 @@ void mob_cast( CHAR_DATA *ch, void *vo, int sn, int multiplier, int target_type 
     OBJ_DATA *obj;
     ROOM_INDEX_DATA *place;
     int luck;
-    int power_res, strength;
+    int strength;
 
     luck = luk_app[get_curr_stat( ch, STAT_LUK )].percent_mod / 3;
 

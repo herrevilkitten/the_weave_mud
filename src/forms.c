@@ -66,4 +66,6 @@ int form_parry( CHAR_DATA *ch, CHAR_DATA *victim )
 	    20
 	}
     };
+
+    return parry[0].bonus;
 }

@@ -751,29 +751,29 @@ void parse_note( CHAR_DATA *ch, char *argument, int type )
     {
 	char arg2[MAX_INPUT_LENGTH];
 	char buf2[MAX_STRING_LENGTH * 2];
-	int restrict;
+	int restricted;
 	BUFFER *buffer;
 
-	restrict = 0;
+	restricted = 0;
 	vnum = 0;
 	buf2[0] = '\0';
 	one_argument( argument, arg2 );
 
         if ( !str_cmp( arg2, "guild" ) )
-            restrict = 1;
+            restricted = 1;
         if ( !str_cmp( arg2, "immortal" ) )
-            restrict = 2;
+            restricted = 2;
         if ( !str_cmp( arg2, "public" ) )
-            restrict = 3;
+            restricted = 3;
         if ( !str_cmp( arg2, "private" ) )
-            restrict = 4;
+            restricted = 4;
         if ( !str_cmp( arg2, "new" ) )
-            restrict = 5;
+            restricted = 5;
         if ( !str_cmp( arg2, "warder" ) )
-            restrict = 6;
+            restricted = 6;
 
 	if ( type != NOTE_NOTE )
-	    restrict = 0;
+	    restricted = 0;
 
 	buffer = new_buf();
 	for ( pnote = *list; pnote != NULL; pnote = pnote->next )
@@ -785,25 +785,25 @@ void parse_note( CHAR_DATA *ch, char *argument, int type )
 		    IS_IMMORTAL(ch) ? pnote->real_name : pnote->sender,
 		    pnote->subject );
 		vnum++;
-                if ( restrict == 1
+                if ( restricted == 1
 		&&   !is_full_name( "guild", pnote->to_list) )
                     continue;
-                if ( restrict == 2
+                if ( restricted == 2
 		&&   !is_full_name( "immortal", pnote->to_list) )
                     continue;
-                if ( restrict == 3
+                if ( restricted == 3
 		&&   !is_full_name( "all", pnote->to_list) )
                     continue;
-                if ( restrict == 4
+                if ( restricted == 4
 		&&   (is_full_name( "all", pnote->to_list ) 
 		||    is_full_name( "guild", pnote->to_list )
 		||    is_full_name( "immortal", pnote->to_list )) )
                     continue;
-                if ( restrict == 5
+                if ( restricted == 5
 		&&   (pnote->date_stamp <= note_time
 		||    !str_cmp( pnote->sender, ch->name )) )
                     continue;
-                if ( restrict == 6
+                if ( restricted == 6
 		&&   !is_full_name("warder", pnote->to_list) )
                     continue;
 		add_buf( buffer, buf );

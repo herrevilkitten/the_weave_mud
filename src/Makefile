@@ -4,7 +4,7 @@ CC      = gcc
 PROF    = -O -ggdb3
 NOCRYPT =
 C_FLAGS =  -Wall $(PROF) $(DEBUG) $(NOCRYPT) -IINC
-L_FLAGS =  $(PROF) $(DEBUG) -lcrypt
+L_FLAGS =  $(PROF) $(DEBUG)
 
 C_FILES = $(wildcard *.c)
 H_FILES = $(wildcard INC/*.h)

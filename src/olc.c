@@ -413,7 +413,8 @@ void aedit( CHAR_DATA *ch, char *argument )
     int  cmd;
     int  value;
 
-    EDIT_AREA(ch, pArea);
+    pArea = (AREA_DATA *) ch->desc->pEdit;
+    if (pArea == NULL) { return; }
     smash_tilde( argument );
     strcpy( arg, argument );
     argument = one_argument( argument, command );
@@ -480,7 +481,8 @@ void redit( CHAR_DATA *ch, char *argument )
     int  cmd;
     int  value;
 
-    EDIT_ROOM(ch, pRoom);
+    pRoom = (ROOM_INDEX_DATA *) ch->desc->pEdit;
+    if (pRoom == NULL) { return; }
     pArea = pRoom->area;
 
     smash_tilde( argument );
@@ -565,7 +567,8 @@ void oedit( CHAR_DATA *ch, char *argument )
     strcpy( arg, argument );
     argument = one_argument( argument, command );
 
-    EDIT_OBJ(ch, pObj);
+    pObj = (OBJ_INDEX_DATA *) ch->desc->pEdit;
+    if (pObj == NULL) { return; }
     pArea = pObj->area;
 
     if ( !IS_BUILDER( ch, pArea ) )
@@ -626,7 +629,8 @@ void medit( CHAR_DATA *ch, char *argument )
     strcpy( arg, argument );
     argument = one_argument( argument, command );
 
-    EDIT_MOB(ch, pMob);
+    pMob = (MOB_INDEX_DATA *) ch->desc->pEdit;
+    if (pMob == NULL) { return; }
     pArea = pMob->area;
 
     if ( !IS_BUILDER( ch, pArea ) )
@@ -974,7 +978,8 @@ void display_resets( CHAR_DATA *ch )
     char 		final [ MAX_STRING_LENGTH ];
     int 		iReset = 0;
 
-    EDIT_ROOM(ch, pRoom);
+    pRoom = (ROOM_INDEX_DATA *) ch->desc->pEdit;
+    if (pRoom == NULL) { return; }
     final[0]  = '\0';
     
     send_to_char ( 

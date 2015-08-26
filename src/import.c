@@ -117,47 +117,47 @@ int convert_room_flag( int flag )
     int new_flag;
 
     new_flag = flag;
-    if ( flag && B )
+    if ( flag & B )
         REMOVE_BIT( new_flag, B );  
-    if ( flag && E )
+    if ( flag & E )
     {
         REMOVE_BIT( new_flag, E );
         SET_BIT( new_flag, K );
         SET_BIT( new_flag, S );
     }
-    if ( flag && F )
+    if ( flag & F )
     {
         REMOVE_BIT( new_flag, F );
         SET_BIT( new_flag, ee );
     }
-    if ( flag && G )
+    if ( flag & G )
         REMOVE_BIT( new_flag, G );
-    if ( flag && H )
+    if ( flag & H )
         REMOVE_BIT( new_flag, H );
-    if ( flag && I )
+    if ( flag & I )
     {
         REMOVE_BIT( new_flag, I );
         SET_BIT( new_flag, J );
     }
-    if ( flag && J )
+    if ( flag & J )
     {
         REMOVE_BIT( new_flag, I );
         SET_BIT( new_flag, N ); 
     }
-    if ( flag && K )
+    if ( flag & K )
     {
         REMOVE_BIT( new_flag, K );
         SET_BIT( new_flag, P );
     }
-    if ( flag && L )
+    if ( flag & L )
         REMOVE_BIT( new_flag, L );
-    if ( flag && M )
+    if ( flag & M )
         REMOVE_BIT( new_flag, M );
-    if ( flag && N )
+    if ( flag & N )
         REMOVE_BIT( new_flag, N );
-    if ( flag && O )
+    if ( flag & O )
         REMOVE_BIT( new_flag, O );
-    if ( flag && P )
+    if ( flag & P )
         REMOVE_BIT( new_flag, P );
     return new_flag;
 }
@@ -167,36 +167,36 @@ int convert_mob_act( int flag )
     int new_flag;
 
     new_flag = flag;
-    if ( flag && A )
+    if ( flag & A )
 	REMOVE_BIT(new_flag, A);
-    if ( flag && C )
+    if ( flag & C )
 	REMOVE_BIT(new_flag, A);
-    if ( flag && D )
+    if ( flag & D )
 	REMOVE_BIT(new_flag, A);
-    if ( flag && E )
+    if ( flag & E )
 	REMOVE_BIT(new_flag, A);
-    if ( flag && I )
+    if ( flag & I )
 	REMOVE_BIT(new_flag, I);
-    if ( flag && J )
+    if ( flag & J )
 	REMOVE_BIT(new_flag, J);
-    if ( flag && K )
+    if ( flag & K )
 	REMOVE_BIT(new_flag, K);
-    if ( flag && L )
+    if ( flag & L )
     {
 	REMOVE_BIT(new_flag, L);
 	SET_BIT(new_flag, N);
     }
-    if ( flag && M )
+    if ( flag & M )
 	REMOVE_BIT(new_flag, M);
-    if ( flag && N )
+    if ( flag & N )
 	REMOVE_BIT(new_flag, N);
-    if ( flag && O )
+    if ( flag & O )
 	REMOVE_BIT(new_flag, O);
-    if ( flag && P )
+    if ( flag & P )
 	REMOVE_BIT(new_flag, P);
-    if ( flag && Q )
+    if ( flag & Q )
 	REMOVE_BIT(new_flag, Q);
-    if ( flag && R )
+    if ( flag & R )
 	REMOVE_BIT(new_flag, R);
 
     SET_BIT(new_flag, A);
@@ -208,53 +208,53 @@ int convert_mob_aff( int flag )
     int new_flag;
 
     new_flag = flag;
-    if ( flag && C )
+    if ( flag & C )
 	REMOVE_BIT(new_flag, C);
-    if ( flag && D )
+    if ( flag & D )
 	REMOVE_BIT(new_flag, D);
-    if ( flag && E )
+    if ( flag & E )
 	REMOVE_BIT(new_flag, E);
-    if ( flag && G )
+    if ( flag & G )
 	REMOVE_BIT(new_flag, G);
-    if ( flag && I )
+    if ( flag & I )
 	REMOVE_BIT(new_flag, I);
-    if ( flag && J )
+    if ( flag & J )
 	REMOVE_BIT(new_flag, J);
-    if ( flag && K )
+    if ( flag & K )
 	REMOVE_BIT(new_flag, K);
-    if ( flag && L )
+    if ( flag & L )
     {
 	REMOVE_BIT(new_flag, I);
 	SET_BIT(new_flag, M);
     }
-    if ( flag && M )
+    if ( flag & M )
 	REMOVE_BIT(new_flag, M);
-    if ( flag && N )
+    if ( flag & N )
 	REMOVE_BIT(new_flag, N);
-    if ( flag && O )
+    if ( flag & O )
     {
 	REMOVE_BIT(new_flag, O);
 	SET_BIT(new_flag, R);
     }
-    if ( flag && P )
+    if ( flag & P )
 	REMOVE_BIT(new_flag, P);
-    if ( flag && Q )
+    if ( flag & Q )
 	REMOVE_BIT(new_flag, Q);
-    if ( flag && R )
+    if ( flag & R )
 	REMOVE_BIT(new_flag, R);
-    if ( flag && S )
+    if ( flag & S )
     {
 	REMOVE_BIT(new_flag, S);
 	SET_BIT(new_flag, P);
     }
-    if ( flag && T )
+    if ( flag & T )
     {
 	REMOVE_BIT(new_flag, T);
 	SET_BIT(new_flag, Q);
     }
-    if ( flag && U )
+    if ( flag & U )
 	REMOVE_BIT(new_flag, U);
-    if ( flag && V )
+    if ( flag & V )
 	REMOVE_BIT(new_flag, V);
 
     return new_flag;

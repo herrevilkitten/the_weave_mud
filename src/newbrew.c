@@ -118,7 +118,7 @@ void do_brew ( CHAR_DATA *ch, char *argument )
 	if ( potion_table[potion].ingredients & j )
 	{
 	    iFound = FALSE;
-	    for ( vobj = ch->carrying; vobj; vobj = vobj = vobj_next )
+	    for ( vobj = ch->carrying; vobj; vobj = vobj_next )
 	    {
 		vobj_next = vobj->next_content;
 

@@ -785,7 +785,7 @@ bool spec_puff( CHAR_DATA *ch )
     CHAR_DATA *vch;
     CHAR_DATA *vch_next;
     CHAR_DATA *victim;
-	extern social_count;
+	extern int social_count;
  	
 	if ( !IS_AWAKE(ch) )
 		return FALSE;

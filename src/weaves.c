@@ -2763,7 +2763,7 @@ SPELL( spell_net_of_pain )
 SPELL( spell_sever_from_true_source )
 {
     CHAR_DATA *victim;
-    int victim_strength;
+    int victim_strength = 0;
 
     victim = (CHAR_DATA *) vo;
 

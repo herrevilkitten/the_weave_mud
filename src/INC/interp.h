@@ -43,7 +43,7 @@ struct	guildcmd_type
     char * const	guild;
     sh_int		log;
     int			rank;
-    sh_int		restrict;
+    sh_int		restricted;
     bool		show;
 };
 

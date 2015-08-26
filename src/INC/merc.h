@@ -20,16 +20,6 @@
 /*
  * Accommodate old non-Ansi compilers.
  */
-#if defined(TRADITIONAL)
-#define const
-#define args( list )			( )
-#define DECLARE_DO_FUN( fun )		void fun( )
-#define DECLARE_SPEC_FUN( fun )		bool fun( )
-#define DECLARE_USE_FUN( fun )		bool fun( )
-#define DECLARE_SPEC_OBJ( fun )		bool fun( )
-#define DECLARE_SPEC_ROOM( fun )	bool fun( )
-#define DECLARE_SPELL_FUN( fun )	void fun( )
-#else
 #define args( list )			list
 #define DECLARE_DO_FUN( fun )		DO_FUN    fun
 #define DECLARE_SPEC_FUN( fun )		SPEC_FUN  fun
@@ -37,14 +27,6 @@
 #define DECLARE_SPEC_OBJ( fun )		SPEC_OBJ  fun
 #define DECLARE_SPEC_ROOM( fun )	SPEC_ROOM  fun
 #define DECLARE_SPELL_FUN( fun )	SPELL_FUN fun
-#endif
-
-/* system calls */
-int unlink();
-int system();
-
-
-
 
 /*
  * Short scalar types.
@@ -70,6 +52,11 @@ typedef short   int			sh_int;
 typedef unsigned char			bool;
 #endif
 
+/*
+ * Common includes
+ */
+#include <stdlib.h>
+#include <unistd.h>
 
 
 /*
@@ -1919,7 +1906,6 @@ extern const struct flag_type   vuln_flags[];
 extern const struct flag_type   position_flags[];
 extern const struct flag_type   weapon_class[];
 extern const struct flag_type   weapon_type[];
-extern const struct flag_type   guild_type[];
 
 
 
@@ -3002,7 +2988,6 @@ extern	const	struct	potion_type	potion_table	[];
 extern	const	struct	herb_type	herb_table	[];
 extern  const   struct  group_type      group_table	[MAX_GROUP];
 extern          struct	social_type	social_table[MAX_SOCIALS];
-extern	const	struct	guilds_type	guild_table[];
 extern	const	int			channel_table[5][101];
 
 #define MAX_COLOR_LIST             16
@@ -3162,17 +3147,6 @@ char *	crypt		args( ( const char *key, const char *salt ) );
  *   so players can go ahead and telnet to all the other descriptors.
  * Then we close it whenever we need to open a file (e.g. a save file).
  */
-#if defined(macintosh)
-#define PLAYER_DIR	""		/* Player files			*/
-#define PLAYER_TEMP	"temp"
-#define NULL_FILE	"proto.are"		/* To reserve one stream	*/
-#endif
-
-#if defined(MSDOS)
-#define NULL_FILE	"nul"		/* To reserve one stream	*/
-#endif
-
-#if defined(unix)
 #define HELP_FILE	"weave.hlp"	/* Help file */
 #define PLAYER_DIR	"../player/"	/* Player files			*/
 #define PLAYER_TEMP	"../player/temp"
@@ -3182,7 +3156,6 @@ char *	crypt		args( ( const char *key, const char *salt ) );
 #define NULL_FILE	"/dev/null"	/* To reserve one stream	*/
 #define	COMMAND_FILE	"../log/command_log"	/* Command log #1 */
 #define COMMAND_LIST	"commands.txt"	/* List of commands		*/
-#endif
 
 #define AREA_LIST	"area.lst"	/* List of areas		*/
 

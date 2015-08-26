@@ -211,7 +211,6 @@ void do_alias(CHAR_DATA *ch, char *argument)
     CHAR_DATA *rch;
     char arg[MAX_INPUT_LENGTH],buf[MAX_STRING_LENGTH];
     int pos;
-    char *p;
 
     if (ch->desc == NULL)
 	rch = ch;
@@ -328,7 +327,7 @@ void do_unalias(CHAR_DATA *ch, char *argument)
  
     argument = one_argument(argument,arg);
 
-    if (arg == '\0')
+    if (*arg == '\0')
     {
 	send_to_char("Unalias what?\n\r",ch);
 	return;
