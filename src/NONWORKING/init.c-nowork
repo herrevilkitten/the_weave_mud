@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <string.h>
+#include "consts.h"
+
+/***************************************************************************
+ * Function: int find_init_entry(FILE *initfile, char *varname, char *buf)
+ *
+ * Description:
+ *   Search the file pointed to by `initfile' for a line beginning with
+ * `varname', using `buf' (an array of size MAX_INIT_LINE + 1) to store the
+ * line.  If an entry is found, return TRUE.  Otherwise return FALSE.
+ *
+ * This is NOT a very efficient method for parsing the initialization
+ * file, since every call to this routine completely resets the file
+ * position before searching.  However, since it still doesn't take all
+ * that much time, and is only called during startup anyway, the
+ * inefficiency is acceptable.
+ **************************************************************************/
+static int find_init_entry(FILE *initfile, char *varname, char *buf) {
+  int varnamelen = strlen(varname);;
+
+  rewind(initfile);
+  while (TRUE) {
+    if (feof(initfile)) {
+      clearerr(initfile);
+      return(FALSE);
+    }
+    fgets(buf, MAX_INITLINE_LEN, initfile);
+    buf[strlen(buf) - 1] = '\0';
+    if (!strncmp(varname, buf, varnamelen) &&
+        (buf[varnamelen] == ' ' || buf[varnamelen] == '=')) return(TRUE);
+  }
+}
+
+/***************************************************************************
+ * Function: int get_init_num(FILE *initfile, char *varname)
+ *
+ * Description:
+ *   Search for an entry of the type  `varname' = integer  in the file
+ * pointed to by `initfile' and, if found, return the value of the integer.
+ **************************************************************************/
+int get_init_num(FILE *initfile, char *varname) {
+  char buf[MAX_INITLINE_LEN + 1], *cptr;
+  int initvalue;
+
+/*
+ * Search for the `varname' entry in `initfile', and return ERROR if not found.
+ */
+  if (!find_init_entry(initfile, varname, buf)) return(ERROR);
+
+/*
+ * Try to find the value that `varname' is set to.  If it can't
+ * be found, return ERROR.  Otherwise return the number.  Begin
+ * by searching for an '=' somewhere in the line, then skip past
+ * any spaces.  Since atoi returns 0 if its input string can't
+ * be converted to an integer, make sure that the initialization
+ * value really is "0" if that's what atoi returns.
+ */
+  if ((cptr = strchr(buf, '=')) == NULL) return(ERROR);
+  for (++cptr; *cptr == ' '; cptr++);
+  initvalue = atoi(cptr);
+  if ((initvalue == 0) && (*cptr != '0')) return(ERROR);
+  return(initvalue);
+}
+
+/***************************************************************************
+ * Function: char *get_init_string(FILE *initfile, char *varname)
+ *
+ * Description:
+ *   Search for an entry of the type  `varname' = string  in the file
+ * pointed to by `initfile' and, if found, return a pointer to the string.
+ *
+ * Note that the string is only stored in a static local buffer, which
+ * means that successive calls to the routine will wipe out previously
+ * located strings.
+ **************************************************************************/
+char *get_init_string(FILE *initfile, char *varname) {
+  static char buf[MAX_INITLINE_LEN + 1];
+  static char *initstring;
+
+/*
+ * Search for the `varname' entry in `initfile', and return NULL if not found.
+ */
+  if (!find_init_entry(initfile, varname, buf)) return(NULL);
+
+/*
+ * Try to find the string that `varname' is set to.  If it can't be found,
+ * return NULL.  Otherwise return a pointer to the string (first non-space
+ * char after first equal sign on the line that begins with `varname').
+ */
+  if ((initstring = strchr(buf, '=')) == NULL) return(NULL);
+  for (initstring++; *initstring == ' '; initstring++);
+  if (*initstring == '\n') return(NULL);
+  return(initstring);
+}

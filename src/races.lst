@@ -1,0 +1,232 @@
+'unique'               N
+0 0 0 0 0 0 0
+100 0 0 0
+0 0 0 0
+0 0 0 0 0 0 0 0
+E
+
+'Aielman'             P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+2 -2 -1 1 0 -2 0 2
+E
+
+'Amadician'            P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+2 1 -1 0 0 -1 0 0
+E
+
+'Andoran'              P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+0 2 0 -2 -1 0 0 1
+E
+
+'Borderlander'         P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+2 -1 0 0 1 0 -1 0
+E
+
+'Cairhienin'           P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+-1 0 2 -2 0 1 0 0
+E
+
+'Domani'               P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+-2 0 0 1 -1 2 0 0
+E
+
+'Illianer'             P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+0 1 0 -1 -2 0 1 1
+E
+
+'Seanchan'             P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+2 0 0 1 -1 -1 -1 0
+E
+
+'Tairen'               P
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 80
+1 2 -2 0 0 -1 0 0
+E
+
+'Ogier'                N
+0 0 Z 0 0 0 0
+1 4 1 100
+AFHMV ABCDEFGHIJK 3 0
+0 0 0 0 0 0 0 0
+E
+
+'human'                N
+0 0 Z 0 0 0 0
+1 2 0 100
+AFHMV ABCDEFGHIJK 2 0
+0 0 0 0 0 0 0 0
+E
+
+'bat'                  N
+0 TZ FH 0 0 0 S
+1 2 0 20
+AGV ACDEFHJKP 1 0
+0 0 0 0 0 0 0 0
+E
+
+'bear'                 N
+0 0 DEO 0 0 EI 0
+1 4 0 135
+AGV ABCDEFHJKUV 3 0
+0 0 0 0 0 0 0 0
+E
+
+'cat'                  N
+0 Z FH 0 0 0 0
+1 3 0 40
+AGV ACDEFHJKQUV 1 0
+0 0 0 0 0 0 0 0
+E
+
+'centipede'            N
+0 Z 0 0 0 FI E
+1 1 0 10
+ABGO ACK 0 0
+0 0 0 0 0 0 0 0
+E
+
+'dog'                  N
+0 0 H 0 0 0 0
+1 3 0 45
+AGV ACDEFHJKUV 1 0
+0 0 0 0 0 0 0 0
+E
+
+'dragkhar'             N
+0 T Z 0 0 0 0
+1 3 0 100
+BGHMWe ABCDEFGIJKPU 2 0
+0 0 0 0 0 0 0 0
+E
+
+'fox'                  N
+0 Z FH 0 0 0 0
+1 2 0 35
+AGV ACDEFHJKQV 1 0
+0 0 0 0 0 0 0 0
+E
+
+'gholam'	       N
+T F 0 BEFHIJK CD 0 0
+2 3 0 350
+AFHMV ABCDEFGHIJK 2 0
+3 3 3 3 3 3 3 3
+E
+
+'horse'                N
+0 0 HI 0 0 0 0
+1 4 0 145
+AGV ACDEFJK 3 0
+0 0 0 0 0 0 0 0
+E
+
+'lizard'               N
+0 0 0 0 0 L I
+1 2 0 20
+AGXc ACDEFHKQV 1 0
+0 0 0 0 0 0 0 0
+E
+
+'myrddraal'            N
+0 FPZ IJRZ 0 0 L 0
+1 3 0 225
+AFHMVe ABCDEFGHIJK 2 0
+0 0 0 0 0 0 0 0
+E
+
+'pig'                  N
+0 0 0 0 0 0 0
+1 2 0 60
+AGV ACDEFHJK 1 0
+0 0 0 0 0 0 0 0
+E
+
+'rabbit'               N
+0 0 FH 0 0 0 0
+1 1 0 30
+AGV ACDEFHJK 1 0
+0 0 0 0 0 0 0 0
+E
+
+'rat'                  N
+0 Z FH 0 0 0 0
+1 2 0 20
+AGV ACDEFHJKQUV 1 0
+0 0 0 0 0 0 0 0
+E
+
+'snake'                N
+0 0 0 0 0 L I
+1 2 0 20
+AGXYc ADEFKLQVX 1 0
+0 0 0 0 0 0 0 0
+E
+
+'song bird'            N
+0 T FH 0 0 0 0
+1 2 0 20
+AGW ACDEFHKP 1 0
+0 0 0 0 0 0 0 0
+E
+
+'trolloc'              N
+0 FZ DZ 0 0 0 0
+1 2 0 175
+AFHMVe ABCDEFGHIJK 2 0
+0 0 0 0 0 0 0 0
+E
+
+'water fowl'           N
+0 T 0 0 0 R 0
+1 1 0 20
+AGW ACDEFHKP 1 0
+0 0 0 0 0 0 0 0
+E
+
+'wolf'                 N
+0 Z FH 0 0 0 0
+1 5 0 120
+AGV ACDEFJKQV 2 0
+0 0 0 0 0 0 0 0
+E
+
+'viper'                N
+0 0 W 0 0 L I
+1 2 0 20
+AGXYc ADEFKLQVX 1 0
+0 0 0 0 0 0 0 0
+E
+
+'-no-more-'               N
+0 0 0 0 0 0 0
+1 4 0 100
+0 0 2 0
+0 0 0 0 0 0 0 0
+E
+
+#0

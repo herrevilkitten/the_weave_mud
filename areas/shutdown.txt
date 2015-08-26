@@ -1,0 +1,6 @@
+[*****] [*****] FILE: ofcol2.are LINE: 3
+[*****] [*****] FILE: shire.are LINE: 3
+[*****] [*****] FILE: immort.are LINE: 3
+[*****] [*****] FILE: immort.are LINE: 3
+[*****] [*****] FILE: immort.are LINE: 3
+[*****] [*****] FILE: immort.are LINE: 17

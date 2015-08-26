@@ -1,0 +1,762 @@
+/***************************************************************************
+ *  Original Diku Mud copyright (C) 1990, 1991 by Sebastian Hammer,        *
+ *  Michael Seifert, Hans Henrik St{rfeldt, Tom Madsen, and Katja Nyboe.   *
+ *                                                                         *
+ *  Merc Diku Mud improvments copyright (C) 1992, 1993 by Michael          *
+ *  Chastain, Michael Quan, and Mitchell Tse.                              *
+ *                                                                         *
+ *  In order to use any part of this Merc Diku Mud, you must comply with   *
+ *  both the original Diku license in 'license.doc' as well the Merc       *
+ *  license in 'license.txt'.  In particular, you may not remove either of *
+ *  these copyright notices.                                               *
+ *                                                                         *
+ *  Much time and thought has gone into this software and you are          *
+ *  benefitting.  We hope that you share your changes too.  What goes      *
+ *  around, comes around.                                                  *
+ ***************************************************************************/
+
+#if defined(macintosh)
+#include <types.h>
+#else
+#include <sys/types.h>
+#endif
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include "merc.h"
+
+#define MAX_DAMAGE_MESSAGE 32
+
+#define CRITICAL( fun )		int fun( CHAR_DATA *ch, CHAR_DATA *victim, int damage, int roll )
+#define FUMBLE( fun )		int fun( CHAR_DATA *ch, CHAR_DATA *victim, int damage, int roll )
+
+#define CRIT_NONE			0
+#define	CRIT_DESTROY_ARMOR		(A)
+#define	CRIT_DESTROY_WEAPON		(B)
+#define CRIT_BASH			(C)
+#define CRIT_BLEEDING			(D)
+#define CRIT_STUN			(E)
+#define CRIT_BROKEN_LEG_RIGHT		(F)
+#define CRIT_BROKEN_LEG_LEFT		(G)
+#define CRIT_BROKEN_LEG_ANY		(G)
+#define CRIT_BROKEN_ARM_RIGHT		(H)
+#define CRIT_BROKEN_ARM_LEFT		(I)
+#define CRIT_BROKEN_ARM_ANY		(J)
+#define	CRIT_KILL			(Z)
+
+typedef	struct	critical_table			CRITICAL_TABLE;
+
+struct critical_table
+{
+    char *	message;
+    int		bonus;
+    int		affect;
+    int 	location;
+};
+
+bool critical( CHAR_DATA *ch, CHAR_DATA *victim, int roll, int dam_type, int sn, bool secondary )
+{
+    OBJ_DATA *corpse;
+    OBJ_DATA *wield;
+    bool immune;
+    int i;
+    int dam;
+    int stamina;
+    int location;
+   
+    if ( !secondary )
+        wield = get_eq_char( ch, WEAR_WIELD );
+    else
+        wield = get_eq_char( ch, WEAR_SECONDARY );
+    
+    if ( victim->position == POS_DEAD )
+        return FALSE;
+
+    if ( IS_NPC(ch)
+    &&   (!ch->pIndexData->new_format
+    ||    wield == NULL
+    ||    ( wield != NULL
+    &&      IS_SET(wield->extra_flags, ITEM_RUINED) )) )
+    {
+	if ( !ch->pIndexData->new_format )
+	{
+	    dam = ch->level * 3 / 2;
+	    if ( ch->race <= race_lookup("human") )
+		dam = 10;
+            
+	    if ( wield != NULL )
+		dam += dam / 2;
+	} else {
+            if ( ch->race <= race_lookup("human") )
+                dam = 10;
+	    else
+	        dam = ch->damage[DICE_NUMBER] * ch->damage[DICE_TYPE];
+        }
+    } else {
+            if ( sn != -1 )
+                check_improve( ch, sn, TRUE, 6 );
+            if ( wield != NULL
+            &&   !IS_SET(wield->extra_flags, ITEM_RUINED)
+            &&   wield->item_type == ITEM_WEAPON )
+            {   
+                if ( wield->pIndexData->new_format )
+                    dam = wield->value[1] * wield->value[2];
+                else
+                    dam = wield->value[2];
+
+                if ( get_eq_char(ch, WEAR_SHIELD) == NULL )
+                    dam = dam * 21 / 20;
+             
+                dam = UMAX( 1, dam * wield->condition / 100 );
+            }
+            else
+            {
+                if ( ch->race <= race_lookup("human") )
+                    dam = 3;
+                else
+                    dam = ch->level * 2 / 3;
+            }   
+    }
+
+    
+    /*
+     * Stop up any residual loopholes.
+     */
+    if ( dam > 1000 )
+    {
+        bug( "Damage: %d: more than 1000 points!", dam );
+        dam = 1000;
+    }
+   
+    
+    if ( victim != ch )
+    {  
+        /*
+         * Certain attacks are forbidden.
+         * Most other attacks are returned.
+         */
+        if ( is_safe( ch, victim ) )
+            return FALSE;
+    
+        if ( victim->position > POS_STUNNED )
+        {
+            if ( victim->fighting == NULL )
+                set_fighting( victim, ch );
+            if (victim->timer <= 4)
+                victim->position = POS_FIGHTING;
+        }
+      
+        if ( victim->position > POS_STUNNED )
+        {
+            if ( ch->fighting == NULL )
+                set_fighting( ch, victim );
+         
+            /*
+             * If victim is charmed, ch might attack victim's master.
+             */
+            if ( IS_NPC(ch)
+            &&   IS_NPC(victim)
+            &&   IS_AFFECTED(victim, AFF_CHARM)
+            &&   victim->master != NULL
+            &&   victim->master->in_room == ch->in_room
+            &&   number_bits( 3 ) == 0 )
+            {
+                stop_fighting( ch, FALSE );
+                multi_hit( ch, victim->master, TYPE_UNDEFINED );
+                return FALSE;
+            }
+        }
+                
+        /*
+         * More charm stuff.
+         */
+        if ( victim->master == ch )
+            stop_follower( victim );
+    }
+            
+    /*
+     * Inviso attacks ... not.  ( Same with Shapeshifted -- Joker )
+     */
+    if ( IS_AFFECTED(ch, AFF_INVISIBLE) )
+    {
+        affect_strip( ch, gsn_invis );
+        affect_strip( ch, gsn_mass_invis );
+        REMOVE_BIT( ch->affected_by, AFF_INVISIBLE );
+        act( "$n fades into existence.", ch, NULL, NULL, TO_ROOM );
+    }           
+          
+    if ( is_affected( ch, gsn_shape_change ) ||
+         is_affected( ch, gsn_disguise ) )
+    {
+        act( "$n's form returns to normal.", ch, NULL, NULL, TO_ROOM );
+        affect_strip( ch, gsn_shape_change );
+        affect_strip( ch, gsn_disguise );
+        REMOVE_BIT( ch->affected_by, AFF_SHAPE_CHANGE );
+        free_string( ch->new_name );
+        free_string( ch->new_short );
+        ch->new_name = str_dup( "" );
+        ch->new_short = str_dup( "" );
+    }
+        
+    /*
+     * Damage modifiers.
+     */         
+    if ( IS_AFFECTED(victim, AFF_AIR_ARMOR) )
+        dam /= 2;
+
+
+    stamina = stamina_percent( ch );        
+    if ( IS_NPC(ch) )
+        stamina = 100;
+        
+    if ( stamina >= 75 )
+        ;
+    else if ( stamina >= 50 )
+        dam -= dam / 20;
+    else if ( stamina >= 25 )
+        dam -= dam / 10;
+    else
+        dam -= dam / 4;
+      
+    immune = FALSE;
+    switch( check_immune(victim, dam_type) )
+    {
+        case ( IS_IMMUNE ):
+            immune = TRUE;
+            dam = 0;
+            break;
+        case ( IS_RESISTANT ):
+            dam -= dam/3;
+            break;
+        case ( IS_VULNERABLE ):
+            dam += dam/2;
+            break;
+    } 
+    
+    /* Damage reduction from fatigue */
+    /* All the routines that use material types -- Joker */
+    /* And routines that involve bonus damage from the weapon */
+    
+    if ( obj != NULL && dam > 0 && dt >= TYPE_HIT
+    &&   !IS_SET(wield->extra_flags, ITEM_RUINED) )
+    {
+        if ( IS_SET(wield->extra_flags, ITEM_BENT) )
+            dam /= 4;
+        
+        /* Check for flaming weapons */
+        if ( IS_SET(wield->value[4], WEAPON_FLAMING) &&
+             wield->item_type == ITEM_WEAPON )
+        {
+            if ( IS_SET(victim->imm_flags, IMM_FIRE) )
+		;
+            else
+            {
+                if ( IS_SET(victim->vuln_flags, VULN_FIRE) )
+                    dam += dam / 4;
+                else if ( IS_SET(victim->res_flags, RES_FIRE) )
+                    dam += dam / 16;
+                else
+                    dam += dam / 8;   
+            }
+        }
+             
+        /* Check for freezing weapons */
+        if ( IS_SET(wield->value[4], WEAPON_FROST) &&
+             wield->item_type == ITEM_WEAPON )
+        {
+            if ( IS_SET(victim->imm_flags, IMM_COLD) )
+		;
+            else
+            {
+                if ( IS_SET(victim->vuln_flags, VULN_COLD) )
+                    dam += dam / 4;
+                else if ( IS_SET(victim->res_flags, RES_COLD) )
+                    dam += dam / 16;
+                else
+                    dam += dam / 8;   
+            }
+        }
+             
+        /* Check for sharp weapons :) */
+        if ( IS_SET(wield->value[4], WEAPON_SHARP) &&
+             wield->item_type == ITEM_WEAPON )
+        {
+            int bonus_dice, bonus_sides;
+                    
+            bonus_dice = wield->value[1] / 2;
+            bonus_sides = wield->value[2] / 2;
+                
+            dam += dice( bonus_dice, bonus_sides );
+            if ( number_percent() >= 60 )
+                SET_BIT( victim->body, BODY_BLEEDING );
+        }
+                    
+        /* Check bonus damage for steel, mithril, and obsidian */
+        if ( wield->material == MAT_STEEL || wield->material == MAT_MITHRIL ||
+             wield->material == MAT_OBSIDIAN )
+            dam++;
+        
+        if ( wield->item_type == ITEM_WEAPON  
+        &&   IS_SET(wield->value[4], WEAPON_POISON) )
+        {
+            AFFECT_DATA af;
+            af.type             = gsn_poison;
+            af.level            = UMAX(1, wield->level/5);
+            af.duration         = UMAX(1, wield->level/10);
+            af.location         = APPLY_STR;
+            af.modifier         = -2;
+            af.bitvector        = AFF_POISON;
+            af.bitvector_2      = 0;
+            af.owner            = NULL;
+            af.flags            = AFFECT_NOTCHANNEL;
+            affect_to_char( victim, &af );
+            send_to_char( "You feel very sick.\n\r", victim );
+            act("$n looks very ill.",victim,NULL,NULL,TO_ROOM);
+            REMOVE_BIT( wield->value[4], WEAPON_POISON );
+        }
+        
+        check_break( obj, dam );
+    }
+            
+            
+    if ( !IS_NPC(ch) && ch->in_room == victim->in_room )
+    {
+        if ( dam == 0 )
+            ch->pcdata->misses++;   
+        else
+            ch->pcdata->hits++;
+    }
+            
+    if ( dam == 0 )
+        return FALSE;
+         
+    /*  
+     * Hurt the victim.
+     * Inform the victim of his new state.
+     */     
+    lose_health( victim, dam, TRUE );
+    if ( dam_type == DAM_BASH )
+        lose_stamina( victim, dam / number_range(15, 25), TRUE, TRUE );
+    else
+        lose_stamina( victim, dam / number_range(20, 35), TRUE, TRUE );
+            
+    if ( dam_type == DAM_SLASH || dam_type == DAM_PIERCE )
+    {
+        if ( number_percent() >= 97 )
+            SET_BIT( victim->body, BODY_BLEEDING );
+    }
+        
+    if ( !IS_NPC(victim)
+    &&   victim->level >= LEVEL_IMMORTAL
+    &&   victim->hit < 1 )
+        victim->hit = 1;
+    update_pos( victim );
+    
+    /*
+     * Sleep spells and extremely wounded folks.
+     */ 
+    if ( !IS_AWAKE(victim) )
+        stop_fighting( victim, FALSE );
+    
+    /*
+     * Payoff for killing things.
+     */
+    if ( victim->position == POS_DEAD )
+    {   
+        group_gain( ch, victim );
+    
+        if ( IS_SET(ch->comm, COMM_AUTOHEAL) )
+            group_heal( ch );
+    
+        if ( !IS_NPC(victim) )
+        {
+            /*
+             * Dying penalty:
+             * 1/2 way back to previous level.
+             * NOT!  Lose a level's worth of xp
+             */
+      
+            if ( IS_NPC(ch) )
+            {
+                int loss;
+                char buf[MAX_STRING_LENGTH];
+        
+                switch (victim->level)
+                {
+                    default: 
+                        loss = -(exp_per_level(victim, victim->pcdata->points));
+                        break;
+                    case 1:
+                        loss = 0;
+                        break;
+                    case 2:
+                        loss = 0;
+                        break;
+                    case 3:
+                        loss = -100;
+                        break;
+                    case 4:
+                        loss = -200;
+                        break;
+                    case 5:
+                        loss = -400;
+                        break;
+                    case 6:
+                        loss = -800;
+                        break;
+                    case 7:
+                        loss = -1600;
+                        break;
+                }
+                sprintf( buf, "You have lost %d experience points.\n\r",
+                    loss * -1 );
+                send_to_char( buf, victim );
+                gain_exp( victim, loss );
+            }
+        }
+                        
+        sprintf( log_buf, "%s got toasted by %s at %s [room %d]",
+            (IS_NPC(victim) ? victim->short_descr : victim->name),
+            (IS_NPC(ch) ? ch->short_descr : ch->name),
+            ch->in_room->name, ch->in_room->vnum);
+                        
+        if (IS_NPC(victim))   
+            wiznet(log_buf,NULL,NULL,WIZ_MOBDEATHS,0,0);
+        else
+            wiznet(log_buf,NULL,NULL,WIZ_DEATHS,0,0);
+                 
+        raw_kill( victim, ch, dam_type );
+                    
+        /* RT new auto commands */
+                
+        if ( !IS_NPC(ch) && IS_NPC(victim) )
+        {
+            corpse = get_obj_list( ch, "corpse", ch->in_room->contents );
+        
+            if ( IS_SET(ch->act, PLR_AUTOLOOT) &&
+                 corpse && corpse->contains) /* exists and not empty */
+                do_get( ch, "all corpse" );
+                        
+            if (IS_SET(ch->act,PLR_AUTOGOLD) &&
+                corpse && corpse->contains  && /* exists and not empty */
+                !IS_SET(ch->act,PLR_AUTOLOOT))
+              do_get(ch, "gold corpse");
+                 
+            if ( IS_SET(ch->act, PLR_AUTOSAC) )
+              if ( IS_SET(ch->act,PLR_AUTOLOOT) && corpse && corpse->contains)
+                return TRUE;  /* leave if corpse has treasure */
+              else
+                do_sacrifice( ch, "corpse" );
+        }
+            
+        return TRUE;
+    }
+                 
+    if ( victim == ch )
+        return TRUE;    
+            
+    /*
+     * Take care of link dead people.
+     */
+    if ( !IS_NPC(victim) && victim->desc == NULL )
+    {
+        if ( number_range( 0, victim->wait ) == 0 )
+        {
+            do_flee( victim, "" );
+            return TRUE;
+        }
+    }       
+        
+    /*
+     * Wimp out? 
+     */
+    if ( IS_NPC(victim) && dam > 0 && victim->wait < 3 )
+    {       
+        if ( ( IS_SET(victim->act, ACT_WIMPY) && number_bits( 2 ) == 0
+        &&   victim->hit < victim->max_hit / 5)
+        ||   ( IS_AFFECTED(victim, AFF_CHARM) && victim->master != NULL
+        &&     victim->master->in_room != victim->in_room ) )
+            do_flee( victim, "" );
+    }
+         
+    if ( !IS_NPC(victim)
+    &&   victim->hit > 0
+    &&   victim->hit <= victim->wimpy
+    &&   victim->wait < 3 )
+        do_flee( victim, "" );
+      
+    tail_chain( );
+    return TRUE;
+}
+
+void fumble( CHAR_DATA *ch, CHAR_DATA *victim, int roll, int dam_type, int sn, bool secondary )
+{
+        if ( victim->position > POS_STUNNED )
+        {
+            if ( victim->fighting == NULL )
+                set_fighting( victim, ch );
+            if (victim->timer <= 4)
+                victim->position = POS_FIGHTING;
+        }
+            
+        if ( victim->position > POS_STUNNED )  
+        {
+            if ( ch->fighting == NULL )
+                set_fighting( ch, victim );   
+         
+            /*
+             * If victim is charmed, ch might attack victim's master.
+             */
+            if ( IS_NPC(ch)
+            &&   IS_NPC(victim)
+            &&   IS_AFFECTED(victim, AFF_CHARM)
+            &&   victim->master != NULL
+            &&   victim->master->in_room == ch->in_room
+            &&   number_bits( 3 ) == 0 )
+            {
+                stop_fighting( ch, FALSE );
+                multi_hit( ch, victim->master, TYPE_UNDEFINED );
+                return;
+            }
+        }
+    return;
+}
+
+CRITICAL( slash_critical )
+{
+    CRITICAL_TABLE critical[] =
+    {
+	{
+	    "$n dodges$% around $N, slicing $M across $S back.",
+	    8,		CRIT_NONE,	WEAR_BODY
+	},
+
+	{
+	    "$n dodges$% around $N, slicing $M across $S back with terrible precision.",
+	    10,		CRIT_STUN,	WEAR_BODY
+	},
+
+	{
+	    "$n maneuver$% $s weapon through $O defenses, making a deep gash in $S side."
+	    8,		CRIT_STUN|CRIT_BLEEDING,	WEAR_BODY
+	},
+
+	{
+	    "$n lunge$%, then twist$% $s blade a little, slicing across $O stomach."
+	    10,		CRIT_STUN|CRIT_BLEEDING,	WEAR_BODY
+	},
+
+	{
+	    "$n slam$% $s weapon down on $O arm, snapping bone and cutting deeply.",
+	    20,		CRIT_BROKEN_ARM_ANY,		WEAR_ARMS
+	},
+
+	{
+	    "$n gut$% $N, blood and guts flowing freely from $S wound.",
+	    200,	CRIT_BLEEDING|CRIT_STUN,	WEAR_BODY
+	},
+
+	{
+	    "$n impale$% $N, $s weapon coming out $O back.",
+	    175,	CRIT_BLEEDING,			WEAR_BODY
+	},
+
+	{
+	    "$n cut$% downward, slicing $O leg a bit.",
+	    5,		CRIT_NONE,			WEAR_LEGS
+	},
+	
+	{
+	    "$n slice$% across $O chest, drawing blood.",
+	    5,		CRIT_BLEEDING,			WEAR_BODY
+	},
+	
+	{
+	    "$n slice$% across $O face, blinding $M with blood.",
+	    5,		CRIT_BLIND,			WEAR_HEAD
+	},
+	
+	{
+	    NULL,		0,	CRIT_NONE,	WEAR_NONE
+	}
+    };
+    int critical_type;
+    int dam, count;
+
+    for ( count = 0; critical[count].name; count++ )
+
+    critical_type = number_range( 0, count );
+
+    act( critical[critical_type].message, ch, NULL, victim, TO_ALL );
+    dam = dam * (100 + critical[critical_type].bonus) / 100;
+
+    if ( critical[critical_type] & CRIT_STUN )
+	WAIT_STATE( victim, 4 );
+    if ( critical[critical_type] & CRIT_BASH )
+    {
+	WAIT_STATE( victim, 2 );
+	victim->position = POS_SITTING;
+    }
+    if ( critical[critical_type] & CRIT_BLEEDING )
+	SET_BIT( victim->body, BODY_BLEEDING );
+    if ( critical[critical_type] & CRIT_BROKEN_LEG_RIGHT )
+	SET_BIT( victim->body, BODY_RIGHT_LEG );
+    if ( critical[critical_type] & CRIT_BROKEN_LEG_LEFT )
+	SET_BIT( victim->body, BODY_LEFT_LEG );
+    if ( critical[critical_type] & CRIT_BROKEN_LEG_ANY )
+    {
+	if ( number_bits(1) == 0 )
+	    SET_BIT( victim->body, BODY_RIGHT_LEG );
+	else
+	    SET_BIT( victim->body, BODY_LEFT_LEG );
+    }
+    if ( critical[critical_type] & CRIT_BROKEN_ARM_RIGHT )
+	SET_BIT( victim->body, BODY_RIGHT_ARM );
+    if ( critical[critical_type] & CRIT_BROKEN_ARM_LEFT )
+	SET_BIT( victim->body, BODY_LEFT_ARM );
+    if ( critical[critical_type] & CRIT_BROKEN_ARM_ANY )
+    {
+	if ( number_bits(1) == 0 )
+	    SET_BIT( victim->body, BODY_RIGHT_ARM );
+	else
+	    SET_BIT( victim->body, BODY_LEFT_ARM );
+    }
+
+    return dam;
+}
+
+
+CRITICAL( pierce_critical )
+{
+    CRITICAL_TABLE critical[] =
+    {
+	{
+	    "",		0,	CRIT_NONE,	WEAR_NONE
+	}
+    };
+
+    return 0;
+}
+
+
+CRITICAL( bash_critical )
+{
+    CRITICAL_TABLE critical[] =
+    {
+	{
+	    "",		0,	CRIT_NONE,	WEAR_NONE
+	}
+    };
+
+    return 0;
+}
+
+
+CRITICAL( hand_to_hand_critical )
+{
+    CRITICAL_TABLE critical[] =
+    {
+	{
+	    "",		0,	CRIT_NONE,	WEAR_NONE
+	}
+    };
+
+    return 0;
+}
+
+FUMBLE( fumble_slash )
+{
+    int criticality;
+
+    criticality = number_percent();
+
+         if ( roll <= -50 )
+	criticality += 75;
+    else if ( roll <= -35 )
+	criticality += 60;
+    else if ( roll <= -20 )
+	criticality += 45;
+    else if ( roll <= -5 )
+	criticality += 30;
+    else if ( roll <= 10 )
+	criticality += 15;
+
+         if ( criticality >= 100 )
+    {
+	act_fight( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 3 );
+    }
+    else if ( criticality >= 90 )
+    {
+	act_fight( "$n swallow$% $s tongue in excitement and begin$% choking.",
+	    ch, NULL, NULL, TO_ALL );
+	WAIT_STATE(ch, 6);
+	return( 0 );
+    }
+    else if ( criticality >= 80 )
+    {
+	act_fight( "$o classless display of stumbling and wounding $mself leave$% $m stunned.",
+	    ch, NULL, NULL, TO_ALL );
+	WAIT_STATE(ch, 3);
+	return( damage );
+    }
+    else if ( criticality >= 70 )
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );
+    }
+    else if ( criticality >= 60 )
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );
+    }
+    else if ( criticality >= 50 )
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );	
+    }
+    else if ( criticality >= 40 )
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );	
+    }
+    else if ( criticality >= 30 )
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );	
+    }
+    else if ( criticality >= 20 )
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );	
+    }
+    else if ( criticality >= 10 )
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );
+    }
+    else
+    {
+	act( "$n slip$% and fall$% to the ground on $s weapon, bloodying the ground.",
+	    ch, NULL, NULL, TO_ALL );
+	SET_BIT(ch->body, BODY_BLEEDING);
+	return( damage * 2 );
+    }
+    return 0;
+}
